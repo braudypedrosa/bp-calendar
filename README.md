@@ -11,7 +11,7 @@ Current version: **1.0.0**
 - date-range selection
 - datepicker mode with popup behavior
 
-It ships as plain JavaScript + SCSS and works in browser globals, CommonJS, and ESM contexts.
+It ships as plain JavaScript + SCSS and works in browser globals and ESM build pipelines.
 
 ## Features
 
@@ -26,6 +26,19 @@ It ships as plain JavaScript + SCSS and works in browser globals, CommonJS, and 
 - Public instance methods for updates, navigation, selection reads, and teardown
 
 ## Installation
+
+### npm
+
+```bash
+npm install @braudypedrosa/bp-calendar
+```
+
+```js
+import { BPCalendar } from '@braudypedrosa/bp-calendar';
+import '@braudypedrosa/bp-calendar/styles';
+```
+
+### Browser
 
 Include your styles and script in the page:
 
@@ -106,7 +119,6 @@ new BPCalendar(container, options)
 ## Exports
 
 - Browser global: `window.BPCalendar`, `window.BP_Calendar`
-- CommonJS: `module.exports = BPCalendar`
 - ESM: `export { BPCalendar, BP_Calendar }`
 
 ## Styling
@@ -121,3 +133,11 @@ Key groups:
 ## License
 
 MIT
+
+## Maintainer Workflow
+
+Edit source files in this repository:
+- `bp-calendar.js`
+- `bp-calendar.scss`
+
+Then release updates by bumping `package.json` version, tagging (`vX.Y.Z`), and publishing.

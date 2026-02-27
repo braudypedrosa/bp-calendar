@@ -1,0 +1,40 @@
+{
+  "name": "@braudypedrosa/bp-calendar",
+  "version": "1.0.0",
+  "description": "Lightweight booking calendar component with single, range, and datepicker modes",
+  "type": "module",
+  "main": "./bp-calendar.js",
+  "module": "./bp-calendar.js",
+  "exports": {
+    ".": "./bp-calendar.js",
+    "./styles": "./bp-calendar.scss"
+  },
+  "files": [
+    "bp-calendar.js",
+    "bp-calendar.scss",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "calendar",
+    "datepicker",
+    "booking",
+    "vacation-rental",
+    "javascript"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/braudypedrosa/bp-calendar.git"
+  },
+  "bugs": {
+    "url": "https://github.com/braudypedrosa/bp-calendar/issues"
+  },
+  "homepage": "https://github.com/braudypedrosa/bp-calendar#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "release:npm": "npm publish"
+  }
+}
