@@ -2,7 +2,7 @@
 
 A lightweight, framework-agnostic calendar component for booking-style date selection.
 
-Current version: **1.0.0**
+Current version: **1.0.1**
 
 ## Overview
 
