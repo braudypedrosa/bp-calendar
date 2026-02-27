@@ -6,7 +6,7 @@
  * Supports both single date and date range selection modes.
  *
  * @class BPCalendar
- * @version 1.0.0
+ * @version 1.0.1
  */
 class BPCalendar {
     /**
