@@ -141,3 +141,17 @@ Edit source files in this repository:
 - `bp-calendar.scss`
 
 Then release updates by bumping `package.json` version, tagging (`vX.Y.Z`), and publishing.
+
+Use one command:
+
+```bash
+npm run release:patch
+# or: npm run release:minor
+# or: npm run release:major
+```
+
+This command sequence will:
+- verify you are on `main` with a clean working tree
+- bump version and create a release commit + git tag
+- push `main` and tags to GitHub
+- publish the new version to npm
