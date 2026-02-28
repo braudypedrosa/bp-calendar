@@ -2,7 +2,7 @@
 
 A lightweight, framework-agnostic calendar component for booking-style date selection.
 
-Current version: **1.0.1**
+Current version: **1.0.2**
 
 ## Overview
 
@@ -92,6 +92,9 @@ new BPCalendar(container, options)
 - `showTooltip: boolean` default `true`
 - `showClearButton: boolean` default `true`
 - `datepickerPlacement: 'default' | 'auto'` default `'default'`
+  - `'auto'` first tries the normal responsive month count, centers the popup when it fits, otherwise aligns it to the relevant input edge, temporarily retries with one month when needed, and only then uses the compact clamped fallback
+- `datepickerAnchorElement: HTMLElement | null`
+  - optional advanced anchor element for popup alignment in datepicker mode; defaults to the input itself
 - `breakpoints: Record<number, number | {monthsToShow: number}>`
 
 ### `DateConfig` shape

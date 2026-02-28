@@ -468,10 +468,10 @@
     }
 
     &.bp-calendar-datepicker-popup--mobile-center {
-        left: 50% !important;
-        right: auto !important;
-        transform: translateX(-50%);
-        transform-origin: top center;
+        left: 0;
+        right: auto;
+        transform: none;
+        transform-origin: top left;
         min-width: 0;
         width: min(calc(100vw - 24px), 420px);
         max-width: calc(100vw - 24px);

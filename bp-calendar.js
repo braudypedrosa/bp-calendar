@@ -6,8 +6,96 @@
  * Supports both single date and date range selection modes.
  *
  * @class BPCalendar
- * @version 1.0.1
+ * @version 1.0.2
  */
+const DATEPICKER_AUTO_VIEWPORT_GUTTER = 12;
+
+/**
+ * Resolves deterministic auto placement for a datepicker popup width.
+ *
+ * Rule order:
+ * 1. Center the popup when it fits within the viewport gutter.
+ * 2. If centered placement crosses the left edge, align popup left edge to input left edge.
+ * 3. If centered placement crosses the right edge, align popup right edge to input right edge.
+ * 4. If none fit, signal fallback so the caller can retry with a smaller popup.
+ *
+ * @param {Object} params
+ * @param {number} params.viewportWidth
+ * @param {number} params.inputLeft
+ * @param {number} params.inputRight
+ * @param {number} params.popupWidth
+ * @param {number} [params.gutter]
+ * @returns {{fits:boolean, mode:'center'|'left'|'right'|'fallback', leftViewport:number|null}}
+ */
+function resolveDatepickerAutoPlacement({
+    viewportWidth,
+    inputLeft,
+    inputRight,
+    popupWidth,
+    gutter = DATEPICKER_AUTO_VIEWPORT_GUTTER
+}) {
+    const centeredLeft = inputLeft + (((inputRight - inputLeft) - popupWidth) / 2);
+    const centeredRight = centeredLeft + popupWidth;
+    const viewportRightLimit = viewportWidth - gutter;
+
+    if (centeredLeft >= gutter && centeredRight <= viewportRightLimit) {
+        return {
+            fits: true,
+            mode: 'center',
+            leftViewport: centeredLeft
+        };
+    }
+
+    if (centeredLeft < gutter && centeredRight > viewportRightLimit) {
+        return {
+            fits: false,
+            mode: 'fallback',
+            leftViewport: null
+        };
+    }
+
+    if (centeredLeft < gutter) {
+        const leftAlignedLeft = inputLeft;
+        const leftAlignedRight = leftAlignedLeft + popupWidth;
+        if (leftAlignedRight <= viewportRightLimit) {
+            return {
+                fits: true,
+                mode: 'left',
+                leftViewport: leftAlignedLeft
+            };
+        }
+
+        return {
+            fits: false,
+            mode: 'fallback',
+            leftViewport: null
+        };
+    }
+
+    if (centeredRight > viewportRightLimit) {
+        const rightAlignedLeft = inputRight - popupWidth;
+        if (rightAlignedLeft >= gutter) {
+            return {
+                fits: true,
+                mode: 'right',
+                leftViewport: rightAlignedLeft
+            };
+        }
+
+        return {
+            fits: false,
+            mode: 'fallback',
+            leftViewport: null
+        };
+    }
+
+    return {
+        fits: false,
+        mode: 'fallback',
+        leftViewport: null
+    };
+}
+
 class BPCalendar {
     /**
      * Creates an instance of BPCalendar
@@ -26,7 +114,8 @@ class BPCalendar {
      * @param {string} options.tooltipLabel - Custom label for tooltip (e.g., 'Nights', 'Days', 'Stays'). Default: 'Nights'
      * @param {boolean} options.showTooltip - Show tooltip on hover (default: true)
      * @param {boolean} options.showClearButton - Show the built-in Clear button (range/datepicker mode). Default: true. Set false to hide (e.g. when using a custom Clear in modal footer).
-     * @param {'default'|'auto'} options.datepickerPlacement - Popup placement strategy for datepicker mode. 'default' keeps existing behavior; 'auto' enables viewport edge-aware alignment.
+ * @param {'default'|'auto'} options.datepickerPlacement - Popup placement strategy for datepicker mode. 'default' keeps existing behavior; 'auto' centers when possible, otherwise aligns to the relevant input edge, temporarily falls back to one month when needed, and only then uses the compact clamped fallback.
+ * @param {HTMLElement|null} options.datepickerAnchorElement - Optional anchor element used for popup alignment in datepicker mode. Defaults to the date input itself.
      * @param {Object<number, (number|{monthsToShow:number})>} options.breakpoints - Responsive monthsToShow overrides keyed by max viewport width (px), e.g. { 1024: 1, 768: { monthsToShow: 1 } }.
      */
     constructor(container, options = {}) {
@@ -68,6 +157,8 @@ class BPCalendar {
             datepickerPlacement: options.datepickerPlacement === 'auto' ? 'auto' : 'default'
         };
         this.responsiveBreakpoints = this.normalizeBreakpoints(this.options.breakpoints);
+        this.popupAutoMonthsOverride = null;
+        this.renderedMonthsToShow = this.getEffectiveMonthsToShow();
 
         // For range mode, track selection state
         // Store two selected dates, then determine start/end automatically
@@ -150,7 +241,7 @@ class BPCalendar {
         // Create calendar inside popup (will use range mode internally)
         const calendarWrapper = document.createElement('div');
         calendarWrapper.className = 'bp-calendar-wrapper';
-        const monthsToShow = this.getEffectiveMonthsToShow();
+        const monthsToShow = this.getPopupMonthsToShow();
         calendarWrapper.setAttribute('data-months', monthsToShow);
         this.calendarWrapper = calendarWrapper;
         
@@ -178,7 +269,7 @@ class BPCalendar {
     renderCalendarInPopup() {
         // Clear existing calendar content
         this.calendarWrapper.innerHTML = '';
-        const monthsToShow = this.getEffectiveMonthsToShow();
+        const monthsToShow = this.getPopupMonthsToShow();
         this.calendarWrapper.setAttribute('data-months', monthsToShow);
         this.renderedMonthsToShow = monthsToShow;
 
@@ -1391,11 +1482,6 @@ class BPCalendar {
 
         const resizeHandler = () => {
             if (!this.popupWrapper || this.popupWrapper.style.display === 'none') return;
-            const nextMonthsToShow = this.getEffectiveMonthsToShow();
-            if (this.renderedMonthsToShow !== nextMonthsToShow) {
-                this.renderCalendarInPopup();
-                this.attachDatepickerEventListeners();
-            }
             this.positionPopup();
         };
         this.resizeHandler = resizeHandler;
@@ -1522,9 +1608,10 @@ class BPCalendar {
                 e.stopPropagation();
                 e.stopImmediatePropagation();
                 e.preventDefault();
-                this.currentDate.setMonth(this.currentDate.getMonth() - this.getEffectiveMonthsToShow());
+                this.currentDate.setMonth(this.currentDate.getMonth() - this.getDatepickerNavigationStep());
                 this.renderCalendarInPopup();
                 this.attachDatepickerEventListeners();
+                this.positionPopup();
                 return false;
             }, true);
         }
@@ -1535,9 +1622,10 @@ class BPCalendar {
                 e.stopPropagation();
                 e.stopImmediatePropagation();
                 e.preventDefault();
-                this.currentDate.setMonth(this.currentDate.getMonth() + this.getEffectiveMonthsToShow());
+                this.currentDate.setMonth(this.currentDate.getMonth() + this.getDatepickerNavigationStep());
                 this.renderCalendarInPopup();
                 this.attachDatepickerEventListeners();
+                this.positionPopup();
                 return false;
             }, true);
         }
@@ -1579,32 +1667,161 @@ class BPCalendar {
     }
 
     /**
+     * Returns the responsive month count before any popup-only auto override.
+     *
+     * @returns {number}
+     */
+    getBasePopupMonthsToShow() {
+        return this.getEffectiveMonthsToShow();
+    }
+
+    /**
+     * Returns the actual month count rendered inside the datepicker popup.
+     *
+     * @returns {number}
+     */
+    getPopupMonthsToShow() {
+        if (this.options.mode === 'datepicker' && this.popupAutoMonthsOverride !== null) {
+            return this.popupAutoMonthsOverride;
+        }
+        return this.getBasePopupMonthsToShow();
+    }
+
+    /**
+     * Updates the temporary popup-only month override used by auto placement.
+     *
+     * @param {number|null} months
+     * @returns {boolean} True when the override changed
+     */
+    setPopupAutoMonthsOverride(months) {
+        if (months === null || months === undefined) {
+            const changed = this.popupAutoMonthsOverride !== null;
+            this.popupAutoMonthsOverride = null;
+            return changed;
+        }
+
+        const normalized = Math.min(4, Math.max(1, Math.round(Number(months))));
+        const changed = this.popupAutoMonthsOverride !== normalized;
+        this.popupAutoMonthsOverride = normalized;
+        return changed;
+    }
+
+    /**
+     * Ensures the datepicker popup is rendered with the requested override state.
+     *
+     * @param {number|null} monthsOverride
+     * @returns {number} Actual months rendered in the popup
+     */
+    ensureDatepickerPopupMonths(monthsOverride = null) {
+        const overrideChanged = this.setPopupAutoMonthsOverride(monthsOverride);
+        const targetMonthsToShow = this.getPopupMonthsToShow();
+
+        if (overrideChanged || this.renderedMonthsToShow !== targetMonthsToShow) {
+            this.renderCalendarInPopup();
+            this.attachDatepickerEventListeners();
+        }
+
+        return targetMonthsToShow;
+    }
+
+    /**
+     * Returns the month step used by datepicker popup navigation.
+     *
+     * @returns {number}
+     */
+    getDatepickerNavigationStep() {
+        const renderedMonths = Number(this.renderedMonthsToShow);
+        if (Number.isFinite(renderedMonths) && renderedMonths > 0) {
+            return renderedMonths;
+        }
+
+        return this.getPopupMonthsToShow();
+    }
+
+    /**
+     * Returns the element rect used for popup placement in datepicker mode.
+     *
+     * @returns {DOMRect}
+     */
+    getDatepickerPlacementAnchorRect() {
+        const anchorElement = this.options.datepickerAnchorElement;
+
+        if (
+            anchorElement &&
+            anchorElement instanceof Node &&
+            typeof anchorElement.getBoundingClientRect === 'function' &&
+            document.contains(anchorElement)
+        ) {
+            return anchorElement.getBoundingClientRect();
+        }
+
+        return this.dateInput.getBoundingClientRect();
+    }
+
+    /**
      * Positions the datepicker popup relative to the input
      */
     positionPopup() {
         if (!this.popupWrapper || !this.dateInput) return;
 
-        const inputRect = this.dateInput.getBoundingClientRect();
+        const anchorRect = this.getDatepickerPlacementAnchorRect();
         const wrapperRect = this.container.getBoundingClientRect();
         const popup = this.popupWrapper;
-        const gutter = 12;
+        const gutter = DATEPICKER_AUTO_VIEWPORT_GUTTER;
         const isAutoPlacement = this.options.datepickerPlacement === 'auto';
-        const isCompactSingleMonth = this.isBreakpointSingleMonthViewport();
 
         // Calculate position relative to the wrapper
-        const topOffset = inputRect.bottom - wrapperRect.top + 5;
-        const leftOffset = inputRect.left - wrapperRect.left;
+        const topOffset = anchorRect.bottom - wrapperRect.top + 5;
+        const leftOffset = anchorRect.left - wrapperRect.left;
 
-        const setLeftAlignment = (left, isImportant = false) => {
-            popup.style.setProperty('left', `${left}px`, isImportant ? 'important' : '');
-            popup.style.setProperty('right', 'auto');
+        const setLeftAlignment = (left) => {
+            popup.style.left = `${left}px`;
+            popup.style.right = 'auto';
             popup.classList.remove('bp-calendar-datepicker-popup--align-right');
+            popup.classList.remove('bp-calendar-datepicker-popup--mobile-center');
         };
 
         const setRightAlignment = (right) => {
-            popup.style.setProperty('left', 'auto');
-            popup.style.setProperty('right', `${right}px`);
+            popup.style.left = 'auto';
+            popup.style.right = `${right}px`;
             popup.classList.add('bp-calendar-datepicker-popup--align-right');
+            popup.classList.remove('bp-calendar-datepicker-popup--mobile-center');
+        };
+
+        const setCompactClampedFallback = () => {
+            popup.classList.remove('bp-calendar-datepicker-popup--align-right');
+            popup.classList.add('bp-calendar-datepicker-popup--mobile-center');
+            popup.style.right = 'auto';
+            popup.style.left = '0px';
+            const popupWidth = popup.getBoundingClientRect().width;
+            const maxLeftViewport = Math.max(gutter, this.getViewportWidth() - popupWidth - gutter);
+            const leftViewport = Math.min(Math.max(anchorRect.left, gutter), maxLeftViewport);
+            popup.style.left = `${leftViewport - wrapperRect.left}px`;
+            popup.style.right = 'auto';
+        };
+
+        const applyAutoPlacementDecision = () => {
+            const decision = resolveDatepickerAutoPlacement({
+                viewportWidth: this.getViewportWidth(),
+                inputLeft: anchorRect.left,
+                inputRight: anchorRect.right,
+                popupWidth: popup.getBoundingClientRect().width,
+                gutter
+            });
+
+            if (!decision.fits) {
+                return false;
+            }
+
+            if (decision.mode === 'right') {
+                const rightOffset = wrapperRect.right - anchorRect.right;
+                setRightAlignment(rightOffset);
+                return true;
+            }
+
+            const leftRelative = decision.leftViewport - wrapperRect.left;
+            setLeftAlignment(leftRelative);
+            return true;
         };
 
         // Position below the input (relative to wrapper).
@@ -1612,42 +1829,26 @@ class BPCalendar {
         popup.style.top = `${topOffset}px`;
         popup.style.zIndex = '10000';
 
-        if (isCompactSingleMonth) {
-            popup.classList.remove('bp-calendar-datepicker-popup--align-right');
-            popup.classList.add('bp-calendar-datepicker-popup--mobile-center');
-            popup.style.setProperty('left', '50%', 'important');
-            popup.style.setProperty('right', 'auto');
-            return;
-        }
-
-        popup.classList.remove('bp-calendar-datepicker-popup--mobile-center');
-
         if (!isAutoPlacement) {
+            this.setPopupAutoMonthsOverride(null);
             setLeftAlignment(leftOffset);
             return;
         }
 
-        // Attempt default left alignment first.
-        setLeftAlignment(leftOffset);
-        let popupRect = popup.getBoundingClientRect();
+        this.ensureDatepickerPopupMonths(null);
+        if (applyAutoPlacementDecision()) {
+            return;
+        }
 
-        // If the popup overflows right edge, align to the right side of the input wrapper.
-        if (popupRect.right > window.innerWidth - gutter) {
-            const rightOffset = Math.max(0, wrapperRect.right - inputRect.right);
-            setRightAlignment(rightOffset);
-            popupRect = popup.getBoundingClientRect();
-
-            // Clamp if right-aligned placement still clips on either side.
-            if (popupRect.left < gutter || popupRect.right > window.innerWidth - gutter) {
-                const maxLeftViewport = Math.max(gutter, window.innerWidth - popupRect.width - gutter);
-                const clampedLeftViewport = Math.min(
-                    Math.max(popupRect.left, gutter),
-                    maxLeftViewport
-                );
-                const leftRelative = clampedLeftViewport - wrapperRect.left;
-                setLeftAlignment(leftRelative, true);
+        if (this.getBasePopupMonthsToShow() !== 1) {
+            this.ensureDatepickerPopupMonths(1);
+            if (applyAutoPlacementDecision()) {
+                return;
             }
         }
+
+        this.ensureDatepickerPopupMonths(this.getBasePopupMonthsToShow() === 1 ? null : 1);
+        setCompactClampedFallback();
     }
 
     /**
@@ -1667,6 +1868,7 @@ class BPCalendar {
         if (newOptions.breakpoints !== undefined) {
             this.responsiveBreakpoints = this.normalizeBreakpoints(newOptions.breakpoints);
         }
+        this.popupAutoMonthsOverride = null;
         this.renderedMonthsToShow = this.getEffectiveMonthsToShow();
         
         // Update range selection if provided
@@ -1849,3 +2051,4 @@ if (typeof window !== 'undefined') {
 
 // ES module export for Vite/bundlers
 export { BPCalendar, BP_Calendar };
+export { resolveDatepickerAutoPlacement };
