@@ -1,3 +1,5 @@
+import './bp-calendar.scss';
+
 /**
  * BP Calendar - A lightweight, dynamic calendar library
  * 
@@ -219,7 +221,7 @@ class BPCalendar {
     renderDatepicker() {
         // Create datepicker wrapper (clicking anywhere on it can open the popup)
         const datepickerWrapper = document.createElement('div');
-        datepickerWrapper.className = 'bp-calendar-datepicker-wrapper bp-widget-reset';
+        datepickerWrapper.className = 'bp-calendar-datepicker-wrapper';
         this.datepickerWrapper = datepickerWrapper;
 
         // Create single input field (like Airbnb)
@@ -240,7 +242,7 @@ class BPCalendar {
         
         // Create calendar inside popup (will use range mode internally)
         const calendarWrapper = document.createElement('div');
-        calendarWrapper.className = 'bp-calendar-wrapper bp-widget-reset';
+        calendarWrapper.className = 'bp-calendar-wrapper';
         const monthsToShow = this.getPopupMonthsToShow();
         calendarWrapper.setAttribute('data-months', monthsToShow);
         this.calendarWrapper = calendarWrapper;
@@ -432,7 +434,7 @@ class BPCalendar {
         // Create the main calendar wrapper
         const monthsToShow = this.getEffectiveMonthsToShow();
         const calendarWrapper = document.createElement('div');
-        calendarWrapper.className = 'bp-calendar-wrapper bp-widget-reset';
+        calendarWrapper.className = 'bp-calendar-wrapper';
         calendarWrapper.setAttribute('data-months', monthsToShow);
         this.renderedMonthsToShow = monthsToShow;
 

@@ -10,37 +10,6 @@
     box-sizing: border-box;
     position: relative;
 
-    .bp-calendar-clear-wrapper {
-        width: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-top: 20px;
-        padding: 10px 0;
-    }
-
-    .bp-calendar-clear {
-        background-color: #dc3545;
-        color: #ffffff;
-        border: none;
-        border-radius: 4px;
-        padding: 8px 16px;
-        font-size: 14px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: background-color 0.2s ease;
-        margin: 10px auto;
-        display: block;
-
-        &:hover {
-            background-color: #c82333;
-        }
-
-        &:active {
-            transform: scale(0.98);
-        }
-    }
-
     .bp-calendar-nav {
         background: none;
         border: none;
@@ -298,6 +267,37 @@
     .bp-calendar-day-empty {
         cursor: default;
         visibility: hidden;
+    }
+}
+
+.bp-calendar-clear-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    padding: 10px 0;
+}
+
+.bp-calendar-clear {
+    background-color: #dc3545;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    margin: 10px auto;
+    display: block;
+
+    &:hover {
+        background-color: #c82333;
+    }
+
+    &:active {
+        transform: scale(0.98);
     }
 }
 

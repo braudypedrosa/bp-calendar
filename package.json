@@ -1,18 +1,18 @@
 {
   "name": "@braudypedrosa/bp-calendar",
-  "version": "1.0.5",
+  "version": "1.0.0",
   "description": "Lightweight booking calendar component with single, range, and datepicker modes",
   "type": "module",
-  "main": "./bp-calendar.js",
-  "module": "./bp-calendar.js",
+  "main": "./dist/bp-calendar.min.js",
+  "module": "./dist/bp-calendar.min.js",
   "exports": {
-    ".": "./bp-calendar.js",
+    ".": "./dist/bp-calendar.min.js",
     "./styles": "./dist/bp-calendar.css"
   },
   "files": [
-    "bp-calendar.js",
-    "dist/bp-calendar.css",
-    "bp-calendar.scss",
+    "dist",
+    "src",
+    "demo",
     "README.md",
     "LICENSE"
   ],
@@ -36,17 +36,17 @@
     "access": "public"
   },
   "scripts": {
-    "build:css": "node ./scripts/build-css.mjs",
+    "build": "vite build",
+    "dev": "vite dev --open demo/index.html",
     "test": "vitest run",
     "test:watch": "vitest",
-    "release": "npm run build:css && bash ./scripts/release.sh",
-    "release:patch": "npm run build:css && bash ./scripts/release.sh patch",
-    "release:minor": "npm run build:css && bash ./scripts/release.sh minor",
-    "release:major": "npm run build:css && bash ./scripts/release.sh major",
+    "release": "npm run build && bash ./scripts/release.sh",
+    "release:patch": "npm run build && bash ./scripts/release.sh patch",
+    "release:minor": "npm run build && bash ./scripts/release.sh minor",
+    "release:major": "npm run build && bash ./scripts/release.sh major",
     "release:npm": "npm publish"
   },
   "devDependencies": {
-    "@braudypedrosa/bp-ui-components": "^0.3.0",
     "jsdom": "^28.1.0",
     "sass-embedded": "^1.97.3",
     "vite": "^7.3.1",
