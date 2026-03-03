@@ -40,4 +40,4 @@ Initial public release of `bp-calendar` as a small, ESM‑first calendar widget.
   - Update behavior with `updateOptions(newOptions)`.
   - Clean up with `destroy()`.
 
-Older internal maintenance changes (CI, tooling, release scripts, etc.) are intentionally omitted to keep this changelog focused on what matters to consumers.
+Older internal maintenance changes (CI, tooling, release scripts, etc.) are intentionally omitted here for brevity.
