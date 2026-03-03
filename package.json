@@ -1,16 +1,17 @@
 {
   "name": "@braudypedrosa/bp-calendar",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Lightweight booking calendar component with single, range, and datepicker modes",
   "type": "module",
   "main": "./bp-calendar.js",
   "module": "./bp-calendar.js",
   "exports": {
     ".": "./bp-calendar.js",
-    "./styles": "./bp-calendar.scss"
+    "./styles": "./dist/bp-calendar.css"
   },
   "files": [
     "bp-calendar.js",
+    "dist/bp-calendar.css",
     "bp-calendar.scss",
     "README.md",
     "LICENSE"
@@ -35,16 +36,20 @@
     "access": "public"
   },
   "scripts": {
+    "build:css": "node ./scripts/build-css.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
-    "release": "bash ./scripts/release.sh",
-    "release:patch": "bash ./scripts/release.sh patch",
-    "release:minor": "bash ./scripts/release.sh minor",
-    "release:major": "bash ./scripts/release.sh major",
+    "release": "npm run build:css && bash ./scripts/release.sh",
+    "release:patch": "npm run build:css && bash ./scripts/release.sh patch",
+    "release:minor": "npm run build:css && bash ./scripts/release.sh minor",
+    "release:major": "npm run build:css && bash ./scripts/release.sh major",
     "release:npm": "npm publish"
   },
   "devDependencies": {
-    "jsdom": "^26.1.0",
-    "vitest": "^3.2.4"
+    "@braudypedrosa/bp-ui-components": "^0.2.1",
+    "jsdom": "^28.1.0",
+    "sass-embedded": "^1.97.3",
+    "vite": "^7.3.1",
+    "vitest": "^4.0.18"
   }
 }

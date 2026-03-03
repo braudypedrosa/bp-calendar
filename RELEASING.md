@@ -26,6 +26,7 @@ Before releasing:
 - make sure npm auth is valid with `npm whoami`
 - make sure checks are passing:
   - `npm test`
+  - `npm run build:css`
 
 ## Pre-release Checklist
 
@@ -34,6 +35,7 @@ Before releasing:
 3. Confirm there are no uncommitted changes.
 4. Run:
    - `npm test`
+   - `npm run build:css`
 5. Confirm npm auth:
    - `npm whoami`
 
@@ -90,6 +92,7 @@ Use this release sequence:
 1. Commit the product work.
 2. Run:
    - `npm test`
+   - `npm run build:css`
 3. Run the release command:
    - `npm run release -- patch`
    - or `minor`
