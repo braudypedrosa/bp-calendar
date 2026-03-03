@@ -46,7 +46,7 @@
     "release:npm": "npm publish"
   },
   "devDependencies": {
-    "@braudypedrosa/bp-ui-components": "^0.2.1",
+    "@braudypedrosa/bp-ui-components": "^0.3.0",
     "jsdom": "^28.1.0",
     "sass-embedded": "^1.97.3",
     "vite": "^7.3.1",
