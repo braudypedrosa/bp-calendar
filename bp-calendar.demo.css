@@ -416,9 +416,6 @@
   color: #222222;
   line-height: 1.5;
 }
-.bp-calendar-datepicker-input:hover {
-  border-color: #717171;
-}
 .bp-calendar-datepicker-input:focus {
   outline: none;
   border-color: #222222;
