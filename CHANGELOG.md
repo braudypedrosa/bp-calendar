@@ -1,37 +1,43 @@
 # Changelog
 
-All notable changes to this project are documented in this file.
+All notable **user-facing** changes to this project are documented here.
 
-## [1.0.5] - 2026-03-04
+## [1.0.0] – 2026-03-04
 
-### Added
-- Added a compiled `./styles` export that includes the shared widget reset stylesheet for consumer-ready CSS imports.
-- Added CI workflow coverage for test and CSS build verification.
+Initial public release of `bp-calendar` as a small, ESM‑first calendar widget.
 
-### Changed
-- Removed duplicated inline reset styles from the calendar stylesheet and moved reset application to runtime root elements.
-- Added `.bp-widget-reset` to both inline calendar and datepicker wrapper roots.
-- Upgraded the local tooling baseline to Vite 7, Vitest 4, jsdom 28, and `sass-embedded` 1.97.3.
+### Highlights
 
-## [1.0.2] - 2026-02-28
+- **Booking-friendly modes**
+  - Single date selection (`single`)
+  - Date range selection (`range`)
+  - Popup datepicker (`datepicker`)
 
-### Changed
-- Reworked `datepickerPlacement: 'auto'` to follow deterministic center, edge-align, one-month fallback, and compact fallback rules.
-- Made datepicker popup navigation follow the actual rendered popup month count during temporary auto-placement fallback.
-- Added support for custom datepicker alignment anchors so embedded hosts can align the popup to the full field shell instead of only the inner input.
-- Updated the compact fallback so narrow popups stay clamped to the anchor/viewport edge instead of floating centered.
+- **Multi‑month layout**
+  - Render between `1` and `4` months side by side.
+  - Responsive month count via simple breakpoint settings.
 
-### Added
-- Added Vitest coverage for datepicker auto-placement rules and popup month fallback behavior.
+- **Per‑day configuration**
+  - Mark dates as disabled.
+  - Attach prices or labels per date.
+  - Enforce minimum / maximum stay length from the check‑in date.
 
-## [1.0.1] - 2026-02-27
+- **Range UX**
+  - Hover preview with “nights” tooltip.
+  - Clear visual styling for start, end, in‑range, today, disabled, and past days.
+  - Built‑in “Clear” control for range and datepicker modes.
 
-### Changed
-- Added automated release scripts (`release`, `release:patch`, `release:minor`, `release:major`) for maintainers.
-- Updated maintainer docs with one-command release instructions.
+- **Datepicker experience**
+  - Popup anchored to an input field.
+  - Optional automatic placement (`datepickerPlacement: 'auto'`) that:
+    - Centers the popup when it fits.
+    - Falls back to left/right alignment near viewport edges.
+    - Uses a compact, clamped layout when space is tight.
 
-## [1.0.0] - 2026-02-27
+- **API surface**
+  - Construct via `new BPCalendar(container, options)`.
+  - Read selection with `getSelectedDate()` / `getSelectedRange()`.
+  - Update behavior with `updateOptions(newOptions)`.
+  - Clean up with `destroy()`.
 
-### Added
-- Initial release of `bp-calendar` package.
-- Framework-agnostic booking calendar with `single`, `range`, and `datepicker` modes.
+Older internal maintenance changes (CI, tooling, release scripts, etc.) are intentionally omitted to keep this changelog focused on what matters to consumers.

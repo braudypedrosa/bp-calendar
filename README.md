@@ -2,63 +2,44 @@
 
 A lightweight, framework-agnostic calendar component for booking-style date selection.
 
-Current version: **1.0.2**
+Current version: **1.0.0**
 
-## Overview
+## What it does
 
 `bp-calendar` renders a customizable calendar UI with support for:
-- single-date selection
-- date-range selection
-- datepicker mode with popup behavior
 
-It ships as plain JavaScript + SCSS and works in browser globals and ESM build pipelines.
+- **Single date** selection
+- **Date range** selection
+- **Popup datepicker** mode with an input + calendar overlay
 
-## Features
+It is designed to be:
 
-- Single, Range, and Datepicker modes (`single`, `range`, `datepicker`)
-- Multi-month rendering (`1` to `4` months)
-- Responsive month count via breakpoint config
-- Per-date configuration (`isDisabled`, `price`, `minDays`, `maxDays`)
-- Range hover preview and duration tooltip
-- Constraint tooltip for min/max stay rules
-- Built-in clear button support (optional)
-- Datepicker popup alignment strategies (`default`, `auto`)
-- Public instance methods for updates, navigation, selection reads, and teardown
+- **ESM‑first** – you import it as a normal ES module.
+- **Framework‑agnostic** – works with plain JS, React, Vue, etc.
+- **Styling‑friendly** – ships with a small CSS file you can import or override.
 
-## Installation
+## Getting started
 
-### npm
-
-```bash
-npm install @braudypedrosa/bp-calendar
-```
+Clone or vendor this repository into your project and import directly from `src`:
 
 ```js
-import { BPCalendar } from '@braudypedrosa/bp-calendar';
-import '@braudypedrosa/bp-calendar/styles';
+// Example: relative path from your app entry
+import { BPCalendar } from './path/to/bp-calendar/src/bp-calendar.js';
+import './path/to/bp-calendar/dist/bp-calendar.css';
 ```
 
-### Browser
-
-Include your styles and script in the page:
-
-```html
-<link rel="stylesheet" href="./bp-calendar.scss" />
-<script type="module" src="./bp-calendar.js"></script>
-```
-
-Or bundle with your build tooling and import as ESM/CommonJS.
-
-## Quick Start
+Then instantiate the calendar:
 
 ```html
 <div id="calendar"></div>
+
 <script type="module">
-  import { BPCalendar } from './bp-calendar.js';
+  import { BPCalendar } from './path/to/bp-calendar/src/bp-calendar.js';
+  import './path/to/bp-calendar/dist/bp-calendar.css';
 
   const calendar = new BPCalendar('#calendar', {
-    mode: 'range',
-    monthsToShow: 2,
+    mode: 'range',          // 'single' | 'range' | 'datepicker'
+    monthsToShow: 2,        // 1–4 months side by side
     onRangeSelect: (range) => {
       console.log('Selected range:', range);
     },
@@ -66,77 +47,118 @@ Or bundle with your build tooling and import as ESM/CommonJS.
 </script>
 ```
 
-## API
+### Using datepicker mode
 
-### Constructor
+```html
+<div id="datepicker-demo"></div>
 
-```js
-new BPCalendar(container, options)
+<script type="module">
+  import { BPCalendar } from './path/to/bp-calendar/src/bp-calendar.js';
+  import './path/to/bp-calendar/dist/bp-calendar.css';
+
+  const datepicker = new BPCalendar('#datepicker-demo', {
+    mode: 'datepicker',
+    monthsToShow: 2,
+    datepickerPlacement: 'auto', // smarter popup placement
+    onRangeSelect: (range) => {
+      console.log('Selected date range:', range);
+    },
+  });
+</script>
 ```
 
-- `container`: `HTMLElement | string`
-- `options`: object
+## Options (consumer-friendly summary)
 
-### Options
+You pass an `options` object as the second argument to `new BPCalendar(container, options)`:
 
-- `startDate: Date` default `new Date()`
-- `monthsToShow: number` (`1..4`) default `2`
-- `mode: 'single' | 'range' | 'datepicker'` default `'single'`
-- `onDateSelect: (date: Date) => void`
-- `onRangeSelect: ({start: Date|null, end: Date|null}) => void`
-- `dateConfig: Record<string, DateConfig>` keyed by `YYYY-MM-DD`
-- `defaultMinDays: number` default `1`
-- `selectedDate: Date | null`
-- `selectedRange: {start: Date, end: Date} | null`
-- `tooltipLabel: string` default `'Nights'`
-- `showTooltip: boolean` default `true`
-- `showClearButton: boolean` default `true`
-- `datepickerPlacement: 'default' | 'auto'` default `'default'`
-  - `'auto'` first tries the normal responsive month count, centers the popup when it fits, otherwise aligns it to the relevant input edge, temporarily retries with one month when needed, and only then uses the compact clamped fallback
-- `datepickerAnchorElement: HTMLElement | null`
-  - optional advanced anchor element for popup alignment in datepicker mode; defaults to the input itself
-- `breakpoints: Record<number, number | {monthsToShow: number}>`
+- `mode`: `'single' | 'range' | 'datepicker'`  
+  Which selection mode to use.
 
-### `DateConfig` shape
+- `monthsToShow`: `number` (1–4, default `2`)  
+  How many months to render next to each other.
+
+- `startDate`: `Date` (default: today)  
+  First month to show.
+
+- `dateConfig`: `Record<string, DateConfig>`  
+  Per-day configuration keyed by `YYYY-MM-DD` strings. See below.
+
+- `onDateSelect(date)`  
+  Called when a date is selected in `single` mode.
+
+- `onRangeSelect({ start, end })`  
+  Called when a range is selected in `range` or `datepicker` modes.
+
+- `defaultMinDays`: `number` (default `1`)  
+  Used for copy and tooltips when no explicit `minDays` is set on a date.
+
+- `selectedDate`: `Date | null`  
+  Initial selection in `single` mode.
+
+- `selectedRange`: `{ start: Date, end: Date } | null`  
+  Initial selection in `range` / `datepicker` modes.
+
+- `tooltipLabel`: `string` (default `'Nights'`)  
+  Label used in the hover tooltips (e.g. “3 Nights”).
+
+- `showTooltip`: `boolean` (default `true`)  
+  Show or hide the hover tooltip.
+
+- `showClearButton`: `boolean` (default `true`)  
+  Show or hide the built‑in **Clear** button.
+
+- `datepickerPlacement`: `'default' | 'auto'` (default `'default'`)  
+  - `'default'`: classic placement below the input.  
+  - `'auto'`: smarter behavior that centers when there’s space and falls back to edge‑aligned and compact layouts when needed.
+
+- `breakpoints`: `Record<number, number | { monthsToShow: number }>`  
+  Simple responsive rules; keys are viewport max widths in pixels.
+
+### `DateConfig` shape (per‑day options)
 
 ```js
 {
-  date: '2026-03-01',
-  isDisabled: false,
-  price: 250,
-  minDays: 2,
-  maxDays: 14,
+  date: '2026-03-01',  // optional label; defaults to key
+  isDisabled: false,   // disable selection for this date
+  price: 250,          // any value to display under the day
+  minDays: 2,          // minimum nights if this is the check-in date
+  maxDays: 14,         // maximum nights if this is the check-in date
 }
 ```
 
-## Public Methods
+## Public methods
 
-- `updateOptions(newOptions)`
-- `clearSelection()`
-- `navigatePrevious()`
-- `navigateNext()`
-- `getSelectedDate(): Date | null`
-- `getSelectedRange(): {start: Date, end: Date} | null`
-- `destroy()`
+Once you have an instance:
 
-## Exports
+- `updateOptions(newOptions)`  
+  Merge in new options and re-render.
 
-- Browser global: `window.BPCalendar`, `window.BP_Calendar`
-- ESM: `export { BPCalendar, BP_Calendar }`
+- `clearSelection()`  
+  Clears the current selection (date or range).
+
+- `navigatePrevious()` / `navigateNext()`  
+  Programmatically move the visible month window.
+
+- `getSelectedDate(): Date | null`  
+- `getSelectedRange(): { start: Date, end: Date } | null`
+
+- `destroy()`  
+  Remove all DOM and event listeners created by the calendar.
 
 ## Styling
 
-The provided stylesheet defines calendar structure and interaction classes under the `.bp-calendar-*` namespace.
+The compiled CSS in `dist/bp-calendar.css` includes all base styles under the `.bp-calendar-*` namespace:
 
-Key groups:
-- layout wrappers (`.bp-calendar-wrapper`, `.bp-calendar-months`)
-- day states (`.bp-calendar-day-selected`, `.bp-calendar-day-in-range`, `.bp-calendar-day-disabled`)
-- datepicker UI (`.bp-calendar-datepicker-*`)
+- Layout: `.bp-calendar-wrapper`, `.bp-calendar-months`, `.bp-calendar-grid`
+- States: `.bp-calendar-day-selected`, `.bp-calendar-day-in-range`, `.bp-calendar-day-disabled`, `.bp-calendar-day-today`
+- Datepicker: `.bp-calendar-datepicker-*`
+- Tooltip: `.bp-calendar-tooltip`, `.bp-calendar-tooltip-constraint`
+
+You can either:
+
+- Import the CSS as‑is and override classes in your own stylesheet, or
+- Start from `src/bp-calendar.scss` if you prefer to run the SCSS through your own pipeline.
 
 ## License
 
 MIT
-
-## Maintainer Workflow
-
-For the reusable release workflow, versioning rules, and verification steps, see [RELEASING.md](./RELEASING.md).
