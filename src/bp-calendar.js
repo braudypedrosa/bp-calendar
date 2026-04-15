@@ -4,11 +4,11 @@ import './bp-calendar.scss';
  * BP Calendar - A lightweight, dynamic calendar library
  * 
  * This library creates a beautiful, customizable calendar component
- * that displays multiple months side by side with navigation controls.
+ * that displays multiple months with horizontal or vertical layout controls.
  * Supports both single date and date range selection modes.
  *
  * @class BPCalendar
- * @version 1.0.2
+ * @version 1.0.6
  */
 const DATEPICKER_AUTO_VIEWPORT_GUTTER = 12;
 
@@ -106,6 +106,7 @@ class BPCalendar {
      * @param {Object} options - Configuration options for the calendar
      * @param {Date} options.startDate - The starting date to display (defaults to current date)
      * @param {number} options.monthsToShow - Number of months to display (1-4, default: 2)
+     * @param {'horizontal'|'vertical'} options.layout - Month layout direction (default: 'horizontal')
      * @param {string} options.mode - Selection mode: 'single', 'range', or 'datepicker' (default: 'single')
      * @param {Function} options.onDateSelect - Callback function when a date is clicked (single mode)
      * @param {Function} options.onRangeSelect - Callback function when a range is selected (range mode)
@@ -116,8 +117,8 @@ class BPCalendar {
      * @param {string} options.tooltipLabel - Custom label for tooltip (e.g., 'Nights', 'Days', 'Stays'). Default: 'Nights'
      * @param {boolean} options.showTooltip - Show tooltip on hover (default: true)
      * @param {boolean} options.showClearButton - Show the built-in Clear button (range/datepicker mode). Default: true. Set false to hide (e.g. when using a custom Clear in modal footer).
- * @param {'default'|'auto'} options.datepickerPlacement - Popup placement strategy for datepicker mode. 'default' keeps existing behavior; 'auto' centers when possible, otherwise aligns to the relevant input edge, temporarily falls back to one month when needed, and only then uses the compact clamped fallback.
- * @param {HTMLElement|null} options.datepickerAnchorElement - Optional anchor element used for popup alignment in datepicker mode. Defaults to the date input itself.
+     * @param {'default'|'auto'} options.datepickerPlacement - Popup placement strategy for datepicker mode. 'default' keeps existing behavior; 'auto' centers when possible, otherwise aligns to the relevant input edge, temporarily falls back to one month when needed, and only then uses the compact clamped fallback.
+     * @param {HTMLElement|null} options.datepickerAnchorElement - Optional anchor element used for popup alignment in datepicker mode. Defaults to the date input itself.
      * @param {Object<number, (number|{monthsToShow:number})>} options.breakpoints - Responsive monthsToShow overrides keyed by max viewport width (px), e.g. { 1024: 1, 768: { monthsToShow: 1 } }.
      */
     constructor(container, options = {}) {
@@ -156,6 +157,7 @@ class BPCalendar {
             showClearButton: options.showClearButton !== false,
             breakpoints: { 768: 1 },
             ...options,
+            layout: this.normalizeLayout(options.layout),
             datepickerPlacement: options.datepickerPlacement === 'auto' ? 'auto' : 'default'
         };
         this.responsiveBreakpoints = this.normalizeBreakpoints(this.options.breakpoints);
@@ -238,6 +240,7 @@ class BPCalendar {
         const popupWrapper = document.createElement('div');
         popupWrapper.className = 'bp-calendar-datepicker-popup';
         popupWrapper.style.display = 'none';
+        popupWrapper.setAttribute('data-layout', this.getCalendarLayout());
         this.popupWrapper = popupWrapper;
         
         // Create calendar inside popup (will use range mode internally)
@@ -245,6 +248,7 @@ class BPCalendar {
         calendarWrapper.className = 'bp-calendar-wrapper';
         const monthsToShow = this.getPopupMonthsToShow();
         calendarWrapper.setAttribute('data-months', monthsToShow);
+        calendarWrapper.setAttribute('data-layout', this.getCalendarLayout());
         this.calendarWrapper = calendarWrapper;
         
         popupWrapper.appendChild(calendarWrapper);
@@ -273,6 +277,10 @@ class BPCalendar {
         this.calendarWrapper.innerHTML = '';
         const monthsToShow = this.getPopupMonthsToShow();
         this.calendarWrapper.setAttribute('data-months', monthsToShow);
+        this.calendarWrapper.setAttribute('data-layout', this.getCalendarLayout());
+        if (this.popupWrapper) {
+            this.popupWrapper.setAttribute('data-layout', this.getCalendarLayout());
+        }
         this.renderedMonthsToShow = monthsToShow;
 
         // Create the months container
@@ -436,6 +444,7 @@ class BPCalendar {
         const calendarWrapper = document.createElement('div');
         calendarWrapper.className = 'bp-calendar-wrapper';
         calendarWrapper.setAttribute('data-months', monthsToShow);
+        calendarWrapper.setAttribute('data-layout', this.getCalendarLayout());
         this.renderedMonthsToShow = monthsToShow;
 
         // Create navigation arrow (left - previous months)
@@ -443,7 +452,6 @@ class BPCalendar {
         navLeft.className = 'bp-calendar-nav bp-calendar-nav-left';
         navLeft.setAttribute('aria-label', 'Previous months');
         navLeft.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-        calendarWrapper.appendChild(navLeft);
 
         // Create the months container
         const monthsContainer = document.createElement('div');
@@ -457,14 +465,27 @@ class BPCalendar {
             monthsContainer.appendChild(month);
         }
 
-        calendarWrapper.appendChild(monthsContainer);
-
         // Create navigation arrow (right - next months)
         const navRight = document.createElement('button');
         navRight.className = 'bp-calendar-nav bp-calendar-nav-right';
         navRight.setAttribute('aria-label', 'Next months');
         navRight.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-        calendarWrapper.appendChild(navRight);
+
+        if (this.getCalendarLayout() === 'vertical') {
+            const navControls = document.createElement('div');
+            navControls.className = 'bp-calendar-nav-controls';
+            navControls.appendChild(navLeft);
+            navControls.appendChild(navRight);
+            calendarWrapper.appendChild(navControls);
+        } else {
+            calendarWrapper.appendChild(navLeft);
+        }
+
+        calendarWrapper.appendChild(monthsContainer);
+
+        if (this.getCalendarLayout() !== 'vertical') {
+            calendarWrapper.appendChild(navRight);
+        }
 
         // Add the calendar to the container
         this.container.appendChild(calendarWrapper);
@@ -1865,6 +1886,12 @@ class BPCalendar {
                 throw new Error('monthsToShow must be between 1 and 4');
             }
         }
+        if (newOptions.layout !== undefined) {
+            newOptions = {
+                ...newOptions,
+                layout: this.normalizeLayout(newOptions.layout)
+            };
+        }
 
         this.options = { ...this.options, ...newOptions };
         if (newOptions.breakpoints !== undefined) {
@@ -1913,6 +1940,33 @@ class BPCalendar {
             })
             .filter(Boolean)
             .sort((a, b) => a.maxWidth - b.maxWidth);
+    }
+
+    /**
+     * Normalizes the month layout direction.
+     *
+     * @param {string|undefined} layout
+     * @returns {'horizontal'|'vertical'}
+     */
+    normalizeLayout(layout) {
+        if (layout === undefined || layout === null) {
+            return 'horizontal';
+        }
+
+        if (layout === 'horizontal' || layout === 'vertical') {
+            return layout;
+        }
+
+        throw new Error("layout must be either 'horizontal' or 'vertical'");
+    }
+
+    /**
+     * Returns the active month layout direction.
+     *
+     * @returns {'horizontal'|'vertical'}
+     */
+    getCalendarLayout() {
+        return this.options.layout === 'vertical' ? 'vertical' : 'horizontal';
     }
 
     /**

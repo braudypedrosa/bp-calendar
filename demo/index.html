@@ -88,6 +88,7 @@
       }
 
       #range-demo,
+      #vertical-demo,
       #datepicker-demo {
         width: 100%;
       }
@@ -135,11 +136,12 @@
   </head>
   <body>
     <main class="demo-shell">
-      <p class="demo-kicker">Demo</p>
+      <p class="demo-kicker">Demo / v1.0.6</p>
       <h1 class="demo-title">Booking calendar, packaged.</h1>
       <p class="demo-copy">
-        This page uses the local <code>BPCalendar</code> source in both range and datepicker
-        modes so the repo root mirrors the same style as the other BP widget demo entry pages.
+        This page uses the local <code>BPCalendar</code> source in range, vertical, and
+        datepicker modes so the repo root mirrors the same style as the other BP widget
+        demo entry pages.
       </p>
 
       <section class="demo-grid">
@@ -147,6 +149,12 @@
           <h2>Range mode</h2>
           <p>Select a stay window to see the normalized callback payload.</p>
           <div id="range-demo"></div>
+        </article>
+
+        <article class="demo-card">
+          <h2>Vertical mode</h2>
+          <p>The same range calendar with multiple months stacked vertically.</p>
+          <div id="vertical-demo"></div>
         </article>
 
         <article class="demo-card">
@@ -171,28 +179,54 @@
         output.textContent = `${label}\n${JSON.stringify(payload, null, 2)}`;
       };
 
+      const formatDate = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      };
+
+      const firstOfNextMonth = () => {
+        const today = new Date();
+        return new Date(today.getFullYear(), today.getMonth() + 1, 1);
+      };
+
+      const startDate = firstOfNextMonth();
+      const dateAt = (day) => formatDate(new Date(startDate.getFullYear(), startDate.getMonth(), day));
+
       const dateConfig = {
-        '2026-03-10': { date: '2026-03-10', price: 185, minDays: 2 },
-        '2026-03-11': { date: '2026-03-11', price: 210 },
-        '2026-03-12': { date: '2026-03-12', price: 240 },
-        '2026-03-13': { date: '2026-03-13', price: 230 },
-        '2026-03-20': { date: '2026-03-20', isDisabled: true },
+        [dateAt(10)]: { date: dateAt(10), price: 185, minDays: 2 },
+        [dateAt(11)]: { date: dateAt(11), price: 210 },
+        [dateAt(12)]: { date: dateAt(12), price: 240 },
+        [dateAt(13)]: { date: dateAt(13), price: 230 },
+        [dateAt(20)]: { date: dateAt(20), isDisabled: true },
       };
 
       const rangeCalendar = new BPCalendar('#range-demo', {
         mode: 'range',
         monthsToShow: 2,
-        startDate: new Date('2026-03-01T00:00:00'),
+        startDate,
         dateConfig,
         onRangeSelect: (range) => {
           writeOutput('range', range);
         },
       });
 
+      const verticalCalendar = new BPCalendar('#vertical-demo', {
+        mode: 'range',
+        monthsToShow: 3,
+        layout: 'vertical',
+        startDate,
+        dateConfig,
+        onRangeSelect: (range) => {
+          writeOutput('vertical', range);
+        },
+      });
+
       const datepickerCalendar = new BPCalendar('#datepicker-demo', {
         mode: 'datepicker',
         monthsToShow: 2,
-        startDate: new Date('2026-03-01T00:00:00'),
+        startDate,
         dateConfig,
         datepickerPlacement: 'auto',
         onRangeSelect: (range) => {
@@ -201,6 +235,7 @@
       });
 
       window.rangeCalendar = rangeCalendar;
+      window.verticalCalendar = verticalCalendar;
       window.datepickerCalendar = datepickerCalendar;
     </script>
   </body>

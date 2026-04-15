@@ -54,6 +54,14 @@
         flex-wrap: wrap;
     }
 
+    .bp-calendar-nav-controls {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: min(320px, 100%);
+        gap: 12px;
+    }
+
     &[data-months="1"] .bp-calendar-months {
         gap: 0;
         justify-content: center;
@@ -69,6 +77,31 @@
 
     &[data-months="4"] .bp-calendar-months {
         gap: 20px;
+    }
+
+    &[data-layout="vertical"] {
+        flex-direction: column;
+        align-items: center;
+
+        .bp-calendar-months {
+            flex-direction: column;
+            flex-wrap: nowrap;
+            align-items: center;
+            width: 100%;
+            gap: 32px;
+        }
+
+        &[data-months="1"] .bp-calendar-months {
+            gap: 0;
+        }
+
+        &[data-months="2"],
+        &[data-months="3"],
+        &[data-months="4"] {
+            .bp-calendar-months {
+                gap: 32px;
+            }
+        }
     }
 
     .bp-calendar-month {
@@ -395,6 +428,24 @@
         .bp-calendar-month {
             min-width: 280px;
             flex: 0 0 auto;
+        }
+
+        &[data-layout="vertical"] {
+            min-width: min(420px, calc(100vw - 24px));
+            max-width: calc(100vw - 24px);
+            width: auto;
+
+            .bp-calendar-months {
+                flex-direction: column;
+                flex-wrap: nowrap;
+                align-items: center;
+                gap: 32px;
+            }
+
+            .bp-calendar-month {
+                min-width: min(280px, 100%);
+                width: min(320px, 100%);
+            }
         }
 
         .bp-calendar-nav-left,

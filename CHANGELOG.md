@@ -2,6 +2,11 @@
 
 All notable **user-facing** changes to this project are documented here.
 
+## [1.0.6] – 2026-04-15
+
+- Added vertical multi-month layout support via `layout: 'vertical'`.
+- Moved inline vertical-mode navigation arrows into a shared top control row.
+
 ## [1.0.0] – 2026-03-04
 
 Initial public release of `bp-calendar` as a small, ESM‑first calendar widget.

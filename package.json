@@ -1,6 +1,6 @@
 {
   "name": "@braudypedrosa/bp-calendar",
-  "version": "1.0.0",
+  "version": "1.0.6",
   "description": "Lightweight booking calendar component with single, range, and datepicker modes",
   "type": "module",
   "main": "./dist/bp-calendar.min.js",

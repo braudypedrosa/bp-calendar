@@ -2,7 +2,7 @@
 
 A lightweight, framework-agnostic calendar component for booking-style date selection.
 
-Current version: **1.0.0**
+Current version: **1.0.6**
 
 ## What it does
 
@@ -11,6 +11,7 @@ Current version: **1.0.0**
 - **Single date** selection
 - **Date range** selection
 - **Popup datepicker** mode with an input + calendar overlay
+- **Horizontal or vertical** multi-month layouts
 
 It is designed to be:
 
@@ -39,12 +40,23 @@ Then instantiate the calendar:
 
   const calendar = new BPCalendar('#calendar', {
     mode: 'range',          // 'single' | 'range' | 'datepicker'
-    monthsToShow: 2,        // 1–4 months side by side
+    monthsToShow: 2,        // 1–4 months
+    layout: 'horizontal',   // 'horizontal' | 'vertical'
     onRangeSelect: (range) => {
       console.log('Selected range:', range);
     },
   });
 </script>
+```
+
+### Using vertical mode
+
+```js
+const calendar = new BPCalendar('#calendar', {
+  mode: 'range',
+  monthsToShow: 3,
+  layout: 'vertical',
+});
 ```
 
 ### Using datepicker mode
@@ -75,7 +87,10 @@ You pass an `options` object as the second argument to `new BPCalendar(container
   Which selection mode to use.
 
 - `monthsToShow`: `number` (1–4, default `2`)  
-  How many months to render next to each other.
+  How many months to render.
+
+- `layout`: `'horizontal' | 'vertical'` (default `'horizontal'`)
+  Controls whether multiple visible months are rendered side by side or stacked vertically.
 
 - `startDate`: `Date` (default: today)  
   First month to show.
